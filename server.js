@@ -16,10 +16,10 @@ type Weather {
   temp: Float!
   description: String!
   feels_like: Float!
-  temp_min: Int!
-  temp_max: Int!
-  pressure: Int!
-  humidity: Int!
+  temp_min: Float!
+  temp_max: Float!
+  pressure: Float!
+  humidity: Float!
 }
 
 type Query {
@@ -32,8 +32,14 @@ const root = {
 		const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip}&units=${units}&appid=${process.env.OWM_API_KEY}`;
 		const res = await fetch(url);
 		const json = await res.json();
+    if (json.cod !== 200) {
+      throw new Error("Invalid ZIP code.");
+    }
 		const description = json.weather[0].description;
-		return { ...json.main, description };
+		return { 
+      ...json.main,
+      description,
+    };
 	}
 }
 
