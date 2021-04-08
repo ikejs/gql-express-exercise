@@ -6,25 +6,34 @@ const { buildSchema } = require('graphql');
 const fetch = require('node-fetch');
 
 const schema = buildSchema(`
+enum Units {
+  standard
+  metric
+  imperial
+}
+
 type Weather {
-  temperature: Float!
+  temp: Float!
   description: String!
+  feels_like: Float!
+  temp_min: Int!
+  temp_max: Int!
+  pressure: Int!
+  humidity: Int!
 }
 
 type Query {
-  getWeather(zip: Int!): Weather!
+  getWeather(zip: Int!, units: Units): Weather!
 }
 `);
 
 const root = {
-  getWeather: async ({ zip }) => {
-		const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip}&appid=${process.env.OWM_API_KEY}`;
+  getWeather: async ({ zip, units = 'imperial' }) => {
+		const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip}&units=${units}&appid=${process.env.OWM_API_KEY}`;
 		const res = await fetch(url);
 		const json = await res.json();
-    console.log(json);
-		const temperature = json.main.temp;
 		const description = json.weather[0].description;
-		return { temperature, description };
+		return { ...json.main, description };
 	}
 }
 
