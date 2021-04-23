@@ -8,6 +8,9 @@ const cors = require("cors");
 
 app.use(cors());
 
+// fake db
+const tasks = [];
+
 const schema = buildSchema(`
 enum Units {
   standard
@@ -26,8 +29,20 @@ type Weather {
   humidity: Float!
 }
 
+type Task {
+  name: String!
+  completed: Boolean!
+}
+
 type Query {
-  getWeather(zip: Int!, lat: Float, lon: Float,  units: Units): Weather!
+  getWeather(zip: Int!, lat: Float, lon: Float,  units: Units): Weather!,
+  getTasks: [Task!]!
+}
+
+type Mutation {
+  createTask(name: String!): Task!,
+  updateTask(index: Int!, newName: String!): Task!,
+  deleteTask(index: Int!): Task!
 }
 `);
 
@@ -46,7 +61,28 @@ const root = {
       city,
       description,
     };
-	}
+	},
+  getTasks: () => {
+    return tasks;
+  },
+  createTask: ({ name }) => {
+    const task = { 
+      name, 
+      completed: false,
+    };
+    tasks.push(task);
+    return task;
+  },
+  updateTask: ({ index, newName }) => {
+    const task = tasks[index];
+    task.name = newName;
+    return task;
+  },
+  deleteTask: ({ index }) => {
+    const task = tasks[index];
+    tasks.splice(index, 1);
+    return task;
+  },
 }
 
 app.use("/graphql", graphqlHTTP({
